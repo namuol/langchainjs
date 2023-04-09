@@ -96,7 +96,7 @@ export const run = async () => {
 
   // Next up, stateful chains that remember the conversation history
 
-  const chatPrompt = ChatPromptTemplate.fromPromptMessages([
+  const chatPrompt = ChatPromptTemplate.fromPromptMessages<string, string>([
     SystemMessagePromptTemplate.fromTemplate(
       "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know."
     ),

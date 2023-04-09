@@ -13,7 +13,6 @@ import {
 } from "langchain/prompts";
 import {
   InputValues,
-  PartialValues,
   AgentStep,
   AgentAction,
   AgentFinish,
@@ -72,7 +71,9 @@ class CustomPromptTemplate extends BaseChatPromptTemplate {
     return [new HumanChatMessage(formatted)];
   }
 
-  partial(_values: PartialValues): Promise<BasePromptTemplate> {
+  partial<P2 extends string>(
+    _values: Record<P2, any>
+  ): Promise<BasePromptTemplate<Exclude<string, P2>, string>> {
     throw new Error("Not implemented");
   }
 

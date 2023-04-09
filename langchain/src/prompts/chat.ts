@@ -101,8 +101,8 @@ export abstract class BaseMessageStringPromptTemplate<
 }
 
 export abstract class BaseChatPromptTemplate<
-  K extends string,
-  P extends string
+  K extends string = string,
+  P extends string = string
 > extends BasePromptTemplate<K, P> {
   constructor(input: BasePromptTemplateInput<K, P>) {
     super(input);
