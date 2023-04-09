@@ -76,7 +76,9 @@ export abstract class BasePromptTemplate<
     const partialVariables = this.partialVariables ?? ({} as Record<P, any>);
     const partialValues = {} as Record<P, any>;
 
-    for (const [key, value] of Object.entries(partialVariables)) {
+    for (const [key, value] of Object.entries(partialVariables) as Array<
+      [P, any]
+    >) {
       if (typeof value === "string") {
         partialValues[key] = value;
       } else {
@@ -155,8 +157,8 @@ export abstract class BasePromptTemplate<
 }
 
 export abstract class BaseStringPromptTemplate<
-  K extends string,
-  P extends string
+  K extends string = string,
+  P extends string = string
 > extends BasePromptTemplate<K, P> {
   async formatPromptValue(
     values: Record<K, any> & Partial<Record<P, any>>

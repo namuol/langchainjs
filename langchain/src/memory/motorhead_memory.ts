@@ -13,15 +13,23 @@ export interface MotorheadMemoryMessage {
   content: string;
 }
 
-export type MotorheadMemoryInput = BaseMemoryInput &
+export type MotorheadMemoryInput<
+  I extends string,
+  O extends string,
+  MI extends string
+> = BaseMemoryInput<I, O> &
   AsyncCallerParams & {
     sessionId: string;
     motorheadURL?: string;
-    memoryKey?: string;
+    memoryKey?: MI;
     timeout?: number;
   };
 
-export class MotorheadMemory extends BaseChatMemory {
+export class MotorheadMemory<
+  I extends string,
+  O extends string,
+  MI extends string
+> extends BaseChatMemory<I, O, MI> {
   motorheadURL = "localhost:8080";
 
   timeout = 3000;
@@ -34,7 +42,7 @@ export class MotorheadMemory extends BaseChatMemory {
 
   caller: AsyncCaller;
 
-  constructor(fields: MotorheadMemoryInput) {
+  constructor(fields: MotorheadMemoryInput<I, O, MI>) {
     const {
       sessionId,
       motorheadURL,
