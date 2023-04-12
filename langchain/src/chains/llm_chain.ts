@@ -1,13 +1,8 @@
 import { BaseChain, ChainInputs } from "./base.js";
-import { SerializedLLM } from "../llms/index.js";
-
-import { BaseMemory, BufferMemory } from "../memory/index.js";
-import {
-  BasePromptTemplate,
-  PromptTemplate,
-  SerializedBasePromptTemplate,
-} from "../prompts/index.js";
-import { resolveConfigFromFile } from "../util/index.js";
+import { BaseMemory } from "../memory/base.js";
+import { BufferMemory } from "../memory/buffer_memory.js";
+import { PromptTemplate } from "../prompts/prompt.js";
+import { BasePromptTemplate } from "../prompts/base.js";
 import { BaseLanguageModel } from "../base_language/index.js";
 import {
   ChainValues,
@@ -40,7 +35,9 @@ export interface LLMChainInput<
  *
  * @example
  * ```ts
- * import { LLMChain, OpenAI, PromptTemplate } from "langchain";
+ * import { LLMChain } from "langchain/chains";
+ * import { OpenAI } from "langchain/llms/openai";
+ * import { PromptTemplate } from "langchain/prompts";
  * const prompt = PromptTemplate.fromTemplate("Tell me a {adjective} joke");
  * const llm = LLMChain({ llm: new OpenAI(), prompt });
  * ```
@@ -132,18 +129,17 @@ export class LLMChain<
   }
 
   static async deserialize(data: SerializedLLMChain) {
-    const serializedLLM = await resolveConfigFromFile<"llm", SerializedLLM>(
-      "llm",
-      data
-    );
-    const serializedPrompt = await resolveConfigFromFile<
-      "prompt",
-      SerializedBasePromptTemplate
-    >("prompt", data);
+    const { llm, prompt } = data;
+    if (!llm) {
+      throw new Error("LLMChain must have llm");
+    }
+    if (!prompt) {
+      throw new Error("LLMChain must have prompt");
+    }
 
     return new LLMChain({
-      llm: await BaseLanguageModel.deserialize(serializedLLM),
-      prompt: await BasePromptTemplate.deserialize(serializedPrompt),
+      llm: await BaseLanguageModel.deserialize(llm),
+      prompt: await BasePromptTemplate.deserialize(prompt),
     });
   }
 

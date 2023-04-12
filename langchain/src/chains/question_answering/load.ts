@@ -1,8 +1,9 @@
 import { LLMChain } from "../llm_chain.js";
-import { BasePromptTemplate } from "../../prompts/index.js";
+import { BasePromptTemplate } from "../../prompts/base.js";
 import {
   StuffDocumentsChain,
   MapReduceDocumentsChain,
+  RefineDocumentsChain,
 } from "../combine_docs_chain.js";
 import { QA_PROMPT_SELECTOR, DEFAULT_QA_PROMPT } from "./stuff_prompts.js";
 import {
@@ -12,12 +13,18 @@ import {
   COMBINE_QA_PROMPT_SELECTOR,
 } from "./map_reduce_prompts.js";
 import { BaseLanguageModel } from "../../base_language/index.js";
+import {
+  QUESTION_PROMPT_SELECTOR,
+  REFINE_PROMPT_SELECTOR,
+} from "./refine_prompts.js";
 
 type QAPromptTemplate = BasePromptTemplate<"context" | "question", string>;
 interface qaChainParams {
   prompt?: QAPromptTemplate;
   combineMapPrompt?: QAPromptTemplate;
   combinePrompt?: QAPromptTemplate;
+  questionPrompt?: QAPromptTemplate;
+  refinePrompt?: QAPromptTemplate;
   type?: "stuff" | "map_reduce";
 }
 export const loadQAChain = (
@@ -45,6 +52,20 @@ export const loadQAChain = (
     const chain = new MapReduceDocumentsChain({
       llmChain,
       combineDocumentChain,
+    });
+    return chain;
+  }
+  if (type === "refine") {
+    const {
+      questionPrompt = QUESTION_PROMPT_SELECTOR.getPrompt(llm),
+      refinePrompt = REFINE_PROMPT_SELECTOR.getPrompt(llm),
+    } = params;
+    const llmChain = new LLMChain({ prompt: questionPrompt, llm });
+    const refineLLMChain = new LLMChain({ prompt: refinePrompt, llm });
+
+    const chain = new RefineDocumentsChain({
+      llmChain,
+      refineLLMChain,
     });
     return chain;
   }
@@ -87,6 +108,29 @@ export const loadQAMapReduceChain = (
   const chain = new MapReduceDocumentsChain({
     llmChain,
     combineDocumentChain,
+  });
+  return chain;
+};
+
+interface RefineQAChainParams {
+  questionPrompt?: BasePromptTemplate;
+  refinePrompt?: BasePromptTemplate;
+}
+
+export const loadQARefineChain = (
+  llm: BaseLanguageModel,
+  params: RefineQAChainParams = {}
+) => {
+  const {
+    questionPrompt = QUESTION_PROMPT_SELECTOR.getPrompt(llm),
+    refinePrompt = REFINE_PROMPT_SELECTOR.getPrompt(llm),
+  } = params;
+  const llmChain = new LLMChain({ prompt: questionPrompt, llm });
+  const refineLLMChain = new LLMChain({ prompt: refinePrompt, llm });
+
+  const chain = new RefineDocumentsChain({
+    llmChain,
+    refineLLMChain,
   });
   return chain;
 };

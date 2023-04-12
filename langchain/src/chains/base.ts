@@ -1,4 +1,4 @@
-import { BaseMemory } from "../memory/index.js";
+import { BaseMemory } from "../memory/base.js";
 import { ChainValues } from "../schema/index.js";
 import { CallbackManager, getCallbackManager } from "../callbacks/index.js";
 import { SerializedBaseChain } from "./serde.js";
@@ -128,16 +128,16 @@ export abstract class BaseChain<
   ): Promise<BaseChain<string, string, string>> {
     switch (data._type) {
       case "llm_chain": {
-        const { LLMChain } = await import("./index.js");
+        const { LLMChain } = await import("./llm_chain.js");
         return LLMChain.deserialize(data);
       }
       case "stuff_documents_chain": {
-        const { StuffDocumentsChain } = await import("./index.js");
-        return StuffDocumentsChain.deserialize(data) as any;
+        const { StuffDocumentsChain } = await import("./combine_docs_chain.js");
+        return StuffDocumentsChain.deserialize(data);
       }
       case "vector_db_qa": {
-        const { VectorDBQAChain } = await import("./index.js");
-        return VectorDBQAChain.deserialize(data, values) as any;
+        const { VectorDBQAChain } = await import("./vector_db_qa.js");
+        return VectorDBQAChain.deserialize(data, values);
       }
       default:
         throw new Error(
