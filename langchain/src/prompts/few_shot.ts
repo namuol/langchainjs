@@ -9,10 +9,7 @@ import {
   renderTemplate,
 } from "./template.js";
 import { PromptTemplate } from "./prompt.js";
-import {
-  SerializedFewShotTemplate,
-  SerializedPromptTemplate,
-} from "./serde.js";
+import { SerializedFewShotTemplate } from "./serde.js";
 import { Example } from "../schema/index.js";
 
 export interface FewShotPromptTemplateInput<
