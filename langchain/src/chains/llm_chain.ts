@@ -39,7 +39,7 @@ export interface LLMChainInput<
  * import { OpenAI } from "langchain/llms/openai";
  * import { PromptTemplate } from "langchain/prompts";
  * const prompt = PromptTemplate.fromTemplate("Tell me a {adjective} joke");
- * const llm = LLMChain({ llm: new OpenAI(), prompt });
+ * const llm = new LLMChain({ llm: new OpenAI(), prompt });
  * ```
  */
 export class LLMChain<
