@@ -143,7 +143,7 @@ export class ChatMessagePromptTemplate<
     this.role = role;
   }
 
-  static fromTemplate<K extends string, P extends string = never>(
+  static fromTemplate<K extends string, P extends string = string>(
     template: string,
     role: string
   ) {
@@ -186,7 +186,7 @@ export class AIMessagePromptTemplate<
     super(prompt);
   }
 
-  static fromTemplate<K extends string, P extends string = never>(
+  static fromTemplate<K extends string, P extends string = string>(
     template: string
   ) {
     return new this(PromptTemplate.fromTemplate<K, P>(template));
