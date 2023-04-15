@@ -11,8 +11,12 @@ import {
 import { BaseChatMemory, BaseMemoryInput } from "./chat_memory.js";
 import { SUMMARY_PROMPT } from "./prompt.js";
 
-export type ConversationSummaryMemoryInput = BaseMemoryInput & {
-  memoryKey?: string;
+export type ConversationSummaryMemoryInput<
+  I extends string,
+  O extends string,
+  MI extends string
+> = BaseMemoryInput<I, O> & {
+  memoryKey?: MI;
   humanPrefix?: string;
   aiPrefix?: string;
   llm: BaseLanguageModel;
@@ -20,10 +24,14 @@ export type ConversationSummaryMemoryInput = BaseMemoryInput & {
   summaryChatMessageClass?: new (content: string) => BaseChatMessage;
 };
 
-export class ConversationSummaryMemory extends BaseChatMemory {
+export class ConversationSummaryMemory<
+  I extends string,
+  O extends string,
+  MI extends string
+> extends BaseChatMemory<I, O, MI> {
   buffer = "";
 
-  memoryKey = "history";
+  memoryKey = "history" as MI;
 
   humanPrefix = "Human";
 
@@ -36,7 +44,7 @@ export class ConversationSummaryMemory extends BaseChatMemory {
   summaryChatMessageClass: new (content: string) => BaseChatMessage =
     SystemChatMessage;
 
-  constructor(fields?: ConversationSummaryMemoryInput) {
+  constructor(fields?: ConversationSummaryMemoryInput<I, O, MI>) {
     const {
       returnMessages,
       inputKey,
