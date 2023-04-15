@@ -48,7 +48,10 @@ export interface PromptTemplateInput<K extends string, P extends string>
  * });
  * ```
  */
-export class PromptTemplate<K extends string, P extends string>
+export class PromptTemplate<
+    K extends string = string,
+    P extends string = string
+  >
   extends BaseStringPromptTemplate<K, P>
   implements PromptTemplateInput<K, P>
 {

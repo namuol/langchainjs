@@ -13,12 +13,12 @@ import {
 import { SerializedLLMChain } from "./serde.js";
 
 export interface LLMChainInput<
-  I extends string,
-  O extends string,
-  MI extends string
+  I extends string = string,
+  O extends string = string,
+  MI extends string = string
 > extends ChainInputs<I, O, MI> {
   /** Prompt object to use */
-  prompt: BasePromptTemplate<I, MI>;
+  prompt: BasePromptTemplate<I | MI>;
   /** LLM Wrapper to use */
   llm: BaseLanguageModel;
   /** OutputParser to use */
@@ -50,7 +50,7 @@ export class LLMChain<
   extends BaseChain<I, O, MI>
   implements LLMChainInput<I, O, MI>
 {
-  prompt: BasePromptTemplate<I, MI>;
+  prompt: BasePromptTemplate<I | MI>;
 
   llm: BaseLanguageModel;
 
@@ -98,7 +98,9 @@ export class LLMChain<
     if ("stop" in values && Array.isArray(values.stop)) {
       stop = values.stop;
     }
-    const promptValue = await this.prompt.formatPromptValue(values);
+    const promptValue = await this.prompt.formatPromptValue(
+      values as Record<I, any> & Partial<Record<MI, any>>
+    );
     const { generations } = await this.llm.generatePrompt([promptValue], stop);
     return {
       [this.outputKey as O]: await this._getFinalOutput(
@@ -160,28 +162,35 @@ Current conversation:
 Human: {input}
 AI:`;
 
-// TODO: Dedupe this from implementation in ./conversation.ts
-export class ConversationChain<
-  I extends string = string,
-  O extends string = string,
-  MI extends string = string
-> extends LLMChain<I, O, MI> {
+// FIXME: Hard-coding these variable names for now, but I think they can
+// technically be configured via the provided `memory`, `prompt`, and
+// `outputKey` fields.
+//
+// It turns out this is pretty hard to generalize unfortunately while
+// maintaining type-safety, due to the need to union various parametric types
+// which can be non-narrow `string`.
+export class ConversationChain extends LLMChain<
+  "input",
+  "response",
+  "history"
+> {
   constructor(fields: {
     llm: BaseLanguageModel;
-    prompt?: BasePromptTemplate<I, MI>;
-    outputKey?: O;
-    memory?: BaseMemory<I, O, MI>;
+    prompt?: BasePromptTemplate<"input" | "history">;
+    outputKey?: "response";
+    memory?: BaseMemory<"input", "response", "history">;
   }) {
     super({
       prompt:
         fields.prompt ??
-        new PromptTemplate<I, MI>({
+        new PromptTemplate<"input" | "history">({
           template: defaultTemplate,
-          inputVariables: ["input" as I],
+          inputVariables: ["input"],
         }),
       llm: fields.llm,
-      outputKey: fields.outputKey ?? ("response" as O),
+      outputKey: fields.outputKey ?? "response",
     });
-    this.memory = fields.memory ?? new BufferMemory<I, O, MI>();
+    this.memory =
+      fields.memory ?? new BufferMemory<"input", "response", "history">();
   }
 }

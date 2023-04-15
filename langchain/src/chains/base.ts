@@ -58,7 +58,7 @@ export abstract class BaseChain<
    */
   abstract serialize(): SerializedBaseChain;
 
-  abstract get inputKeys(): I[];
+  abstract get inputKeys(): (I | MI)[];
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async run(input: any): Promise<string> {
@@ -68,7 +68,7 @@ export abstract class BaseChain<
         `Chain ${this._chainType()} expects multiple inputs, cannot use 'run' `
       );
     }
-    const values = { [this.inputKeys[0]]: input } as ChainValues<I>;
+    const values = { [this.inputKeys[0]]: input } as ChainValues<I | MI>;
     const returnValues = await this.call(values);
     const keys = Object.keys(returnValues) as O[];
     if (keys.length === 1) {
