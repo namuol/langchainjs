@@ -72,18 +72,25 @@ export const loadQAChain = (
   throw new Error(`Invalid _type: ${type}`);
 };
 
-interface StuffQAChainParams {
-  prompt?: BasePromptTemplate<any, any>;
+interface StuffQAChainParams<K extends string, P extends string> {
+  prompt?: BasePromptTemplate<K, P>;
 }
 
-export const loadQAStuffChain = (
+export const loadQAStuffChain = <
+  // Default to `"question"` as derived from `QA_PROMPT_SELECTOR.getPrompt(llm)`
+  //
+  // What I don't understand is, where does `"context"` come from? Is it just
+  // technically optional?
+  K extends string = "question",
+  P extends string = never
+>(
   llm: BaseLanguageModel,
-  params: StuffQAChainParams = {}
+  params: StuffQAChainParams<K, P> = {}
 ) => {
   const { prompt = QA_PROMPT_SELECTOR.getPrompt(llm) } = params;
-  const llmChain = new LLMChain({ prompt, llm });
+  const llmChain = new LLMChain({ prompt: prompt as any, llm });
   const chain = new StuffDocumentsChain({ llmChain });
-  return chain;
+  return chain as StuffDocumentsChain<K, P, "text", string, "input_documents">;
 };
 
 interface MapReduceQAChainParams {

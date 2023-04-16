@@ -19,8 +19,12 @@ If you don't know the answer, just say that you don't know, don't try to make up
 ----------------
 {context}`;
 const messages = [
-  /*#__PURE__*/ SystemMessagePromptTemplate.fromTemplate(system_template),
-  /*#__PURE__*/ HumanMessagePromptTemplate.fromTemplate("{question}"),
+  /*#__PURE__*/ SystemMessagePromptTemplate.fromTemplate<"context">(
+    system_template
+  ),
+  /*#__PURE__*/ HumanMessagePromptTemplate.fromTemplate<"question">(
+    "{question}"
+  ),
 ];
 const CHAT_PROMPT =
   /*#__PURE__*/ ChatPromptTemplate.fromPromptMessages(messages);

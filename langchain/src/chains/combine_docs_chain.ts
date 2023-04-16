@@ -17,14 +17,15 @@ export interface StuffDocumentsChainInput<
   LP extends string,
   LO extends string,
   LMI extends string,
-  K extends string
+  K extends string,
+  DK extends string
 > {
   /** LLM Wrapper to use after formatting documents */
   llmChain: LLMChain<LK, LP, LO, LMI>;
   inputKey: K;
   outputKey: string;
   /** Variable name in the LLM chain to put the documents in */
-  documentVariableName: LK | LP;
+  documentVariableName: DK;
 }
 
 /**
@@ -37,10 +38,11 @@ export class StuffDocumentsChain<
     LP extends string,
     LO extends string,
     LMI extends string,
-    K extends string = "input_documents"
+    K extends string = "input_documents",
+    DK extends string = "context"
   >
-  extends BaseChain<K, string, LO, string>
-  implements StuffDocumentsChainInput<LK, LP, LO, LMI, K>
+  extends BaseChain<Exclude<K | LK, DK>, LP, LO, string>
+  implements StuffDocumentsChainInput<LK, LP, LO, LMI, K, DK>
 {
   llmChain: LLMChain<LK, LP, LO, LMI>;
 
@@ -48,7 +50,7 @@ export class StuffDocumentsChain<
 
   outputKey = "output_text";
 
-  documentVariableName = "context" as LK | LP;
+  documentVariableName = "context" as DK;
 
   get inputKeys() {
     return [this.inputKey, ...this.llmChain.inputKeys];
@@ -58,7 +60,7 @@ export class StuffDocumentsChain<
     llmChain: LLMChain<LK, LP, LO, LMI>;
     inputKey?: K;
     outputKey?: string;
-    documentVariableName?: LK | LP;
+    documentVariableName?: DK;
   }) {
     super();
     this.llmChain = fields.llmChain;
@@ -68,7 +70,9 @@ export class StuffDocumentsChain<
     this.outputKey = fields.outputKey ?? this.outputKey;
   }
 
-  async _call(values: ChainValues<K, string>): Promise<ChainValues<LO, never>> {
+  async _call(
+    values: ChainValues<Exclude<K | LK, DK>, LP>
+  ): Promise<ChainValues<LO, never>> {
     if (!(this.inputKey in values)) {
       throw new Error(`Document key ${this.inputKey} not found.`);
     }
@@ -105,7 +109,7 @@ export class StuffDocumentsChain<
 }
 
 export interface MapReduceDocumentsChainInput
-  extends StuffDocumentsChainInput<any, any, any, any, any> {
+  extends StuffDocumentsChainInput<any, any, any, any, any, any> {
   maxTokens: number;
   maxIterations: number;
   combineDocumentsChain: BaseChain<any, any, any, any>;
@@ -118,7 +122,7 @@ export interface MapReduceDocumentsChainInput
  */
 export class MapReduceDocumentsChain
   extends BaseChain<any, any, any, any>
-  implements StuffDocumentsChainInput<any, any, any, any, any>
+  implements StuffDocumentsChainInput<any, any, any, any, any, any>
 {
   llmChain: LLMChain<any, any, any, any>;
 
@@ -234,7 +238,7 @@ export class MapReduceDocumentsChain
 }
 
 export interface RefineDocumentsChainInput
-  extends StuffDocumentsChainInput<any, any, any, any, any> {
+  extends StuffDocumentsChainInput<any, any, any, any, any, any> {
   refineLLMChain: LLMChain<any, any, any, any>;
   documentPrompt: BasePromptTemplate<any, any>;
 }
