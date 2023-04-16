@@ -9,14 +9,14 @@ export type LoadValues = Record<string, any>;
 
 export interface RetrievalQAChainInput {
   retriever: BaseRetriever;
-  combineDocumentsChain: BaseChain;
+  combineDocumentsChain: BaseChain<any, any, any, any>;
   outputKey: string;
   inputKey: string;
   returnSourceDocuments?: boolean;
 }
 
 export class RetrievalQAChain
-  extends BaseChain
+  extends BaseChain<any, any, any, any>
   implements RetrievalQAChainInput
 {
   inputKey = "query";
@@ -29,13 +29,13 @@ export class RetrievalQAChain
 
   retriever: BaseRetriever;
 
-  combineDocumentsChain: BaseChain;
+  combineDocumentsChain: BaseChain<any, any, any, any>;
 
   returnSourceDocuments = false;
 
   constructor(fields: {
     retriever: BaseRetriever;
-    combineDocumentsChain: BaseChain;
+    combineDocumentsChain: BaseChain<any, any, any, any>;
     inputKey?: string;
     outputKey?: string;
     returnSourceDocuments?: boolean;
@@ -49,7 +49,7 @@ export class RetrievalQAChain
       fields.returnSourceDocuments ?? this.returnSourceDocuments;
   }
 
-  async _call(values: ChainValues): Promise<ChainValues> {
+  async _call(values: ChainValues<any, any>): Promise<ChainValues<any, any>> {
     if (!(this.inputKey in values)) {
       throw new Error(`Question key ${this.inputKey} not found.`);
     }

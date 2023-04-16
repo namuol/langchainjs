@@ -4,22 +4,25 @@ import { BaseLanguageModel } from "../base_language/index.js";
 import { BaseLLM } from "../llms/base.js";
 
 export abstract class BasePromptSelector {
-  abstract getPrompt(llm: BaseLanguageModel): BasePromptTemplate;
+  abstract getPrompt(llm: BaseLanguageModel): BasePromptTemplate<any, any>;
 }
 
 export class ConditionalPromptSelector extends BasePromptSelector {
-  defaultPrompt: BasePromptTemplate;
+  defaultPrompt: BasePromptTemplate<any, any>;
 
   conditionals: Array<
-    [condition: (llm: BaseLanguageModel) => boolean, prompt: BasePromptTemplate]
+    [
+      condition: (llm: BaseLanguageModel) => boolean,
+      prompt: BasePromptTemplate<any, any>
+    ]
   >;
 
   constructor(
-    default_prompt: BasePromptTemplate,
+    default_prompt: BasePromptTemplate<any, any>,
     conditionals: Array<
       [
         condition: (llm: BaseLanguageModel) => boolean,
-        prompt: BasePromptTemplate
+        prompt: BasePromptTemplate<any, any>
       ]
     > = []
   ) {
@@ -28,7 +31,7 @@ export class ConditionalPromptSelector extends BasePromptSelector {
     this.conditionals = conditionals;
   }
 
-  getPrompt(llm: BaseLanguageModel): BasePromptTemplate {
+  getPrompt(llm: BaseLanguageModel): BasePromptTemplate<any, any> {
     for (const [condition, prompt] of this.conditionals) {
       if (condition(llm)) {
         return prompt;

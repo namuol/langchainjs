@@ -25,14 +25,14 @@ Helpful Answer:`;
 
 export interface ConversationalRetrievalQAChainInput {
   retriever: BaseRetriever;
-  combineDocumentsChain: BaseChain;
-  questionGeneratorChain: LLMChain;
+  combineDocumentsChain: BaseChain<any, any, any, any>;
+  questionGeneratorChain: LLMChain<any, any, any, any>;
   outputKey: string;
   inputKey: string;
 }
 
 export class ConversationalRetrievalQAChain
-  extends BaseChain
+  extends BaseChain<any, any, any, any>
   implements ConversationalRetrievalQAChainInput
 {
   inputKey = "question";
@@ -47,16 +47,16 @@ export class ConversationalRetrievalQAChain
 
   retriever: BaseRetriever;
 
-  combineDocumentsChain: BaseChain;
+  combineDocumentsChain: BaseChain<any, any, any, any>;
 
-  questionGeneratorChain: LLMChain;
+  questionGeneratorChain: LLMChain<any, any, any, any>;
 
   returnSourceDocuments = false;
 
   constructor(fields: {
     retriever: BaseRetriever;
-    combineDocumentsChain: BaseChain;
-    questionGeneratorChain: LLMChain;
+    combineDocumentsChain: BaseChain<any, any, any, any>;
+    questionGeneratorChain: LLMChain<any, any, any, any>;
     inputKey?: string;
     outputKey?: string;
     returnSourceDocuments?: boolean;
@@ -71,7 +71,7 @@ export class ConversationalRetrievalQAChain
       fields.returnSourceDocuments ?? this.returnSourceDocuments;
   }
 
-  async _call(values: ChainValues): Promise<ChainValues> {
+  async _call(values: ChainValues<any, any>): Promise<ChainValues<any, any>> {
     if (!(this.inputKey in values)) {
       throw new Error(`Question key ${this.inputKey} not found.`);
     }

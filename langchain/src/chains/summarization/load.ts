@@ -8,9 +8,9 @@ import {
 import { DEFAULT_PROMPT } from "./stuff_prompts.js";
 
 interface summarizationChainParams {
-  prompt?: BasePromptTemplate;
-  combineMapPrompt?: BasePromptTemplate;
-  combinePrompt?: BasePromptTemplate;
+  prompt?: BasePromptTemplate<any, any>;
+  combineMapPrompt?: BasePromptTemplate<any, any>;
+  combinePrompt?: BasePromptTemplate<any, any>;
   type?: "map_reduce" | "stuff";
 }
 export const loadSummarizationChain = (

@@ -73,7 +73,7 @@ export const loadQAChain = (
 };
 
 interface StuffQAChainParams {
-  prompt?: BasePromptTemplate;
+  prompt?: BasePromptTemplate<any, any>;
 }
 
 export const loadQAStuffChain = (
@@ -87,8 +87,8 @@ export const loadQAStuffChain = (
 };
 
 interface MapReduceQAChainParams {
-  combineMapPrompt?: BasePromptTemplate;
-  combinePrompt?: BasePromptTemplate;
+  combineMapPrompt?: BasePromptTemplate<any, any>;
+  combinePrompt?: BasePromptTemplate<any, any>;
 }
 
 export const loadQAMapReduceChain = (
@@ -113,8 +113,8 @@ export const loadQAMapReduceChain = (
 };
 
 interface RefineQAChainParams {
-  questionPrompt?: BasePromptTemplate;
-  refinePrompt?: BasePromptTemplate;
+  questionPrompt?: BasePromptTemplate<any, any>;
+  refinePrompt?: BasePromptTemplate<any, any>;
 }
 
 export const loadQARefineChain = (

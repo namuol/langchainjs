@@ -50,7 +50,9 @@ class CustomPromptTemplate extends BaseChatPromptTemplate {
     throw new Error("Not implemented");
   }
 
-  async formatMessages(values: InputValues): Promise<BaseChatMessage[]> {
+  async formatMessages(
+    values: InputValues<any, any>
+  ): Promise<BaseChatMessage[]> {
     /** Construct the final template */
     const toolStrings = this.tools
       .map((tool) => `${tool.name}: ${tool.description}`)

@@ -54,7 +54,7 @@ export abstract class BaseAgent {
   returnStoppedResponse(
     earlyStoppingMethod: StoppingMethod,
     _steps: AgentStep[],
-    _inputs: ChainValues
+    _inputs: ChainValues<any, any>
   ): Promise<AgentFinish> {
     if (earlyStoppingMethod === "force") {
       return Promise.resolve({
@@ -92,7 +92,7 @@ export abstract class BaseSingleActionAgent extends BaseAgent {
    */
   abstract plan(
     steps: AgentStep[],
-    inputs: ChainValues
+    inputs: ChainValues<any, any>
   ): Promise<AgentAction | AgentFinish>;
 }
 
@@ -111,18 +111,18 @@ export abstract class BaseMultiActionAgent extends BaseAgent {
    */
   abstract plan(
     steps: AgentStep[],
-    inputs: ChainValues
+    inputs: ChainValues<any, any>
   ): Promise<AgentAction[] | AgentFinish>;
 }
 
 export interface LLMSingleActionAgentInput {
-  llmChain: LLMChain;
+  llmChain: LLMChain<any, any, any, any>;
   outputParser: AgentActionOutputParser;
   stop?: string[];
 }
 
 export class LLMSingleActionAgent extends BaseSingleActionAgent {
-  llmChain: LLMChain;
+  llmChain: LLMChain<any, any, any, any>;
 
   outputParser: AgentActionOutputParser;
 
@@ -149,7 +149,7 @@ export class LLMSingleActionAgent extends BaseSingleActionAgent {
    */
   async plan(
     steps: AgentStep[],
-    inputs: ChainValues
+    inputs: ChainValues<any, any>
   ): Promise<AgentAction | AgentFinish> {
     const output = await this.llmChain.call({
       intermediate_steps: steps,
@@ -163,12 +163,12 @@ export class LLMSingleActionAgent extends BaseSingleActionAgent {
 /**
  * Class responsible for calling a language model and deciding an action.
  *
- * @remarks This is driven by an LLMChain. The prompt in the LLMChain *must*
+ * @remarks This is driven by an LLMChain<any, any, any, any>. The prompt in the LLMChain<any, any, any, any> *must*
  * include a variable called "agent_scratchpad" where the agent can put its
  * intermediary work.
  */
 export abstract class Agent extends BaseSingleActionAgent {
-  llmChain: LLMChain;
+  llmChain: LLMChain<any, any, any, any>;
 
   private _allowedTools?: string[] = undefined;
 
@@ -177,7 +177,9 @@ export abstract class Agent extends BaseSingleActionAgent {
   }
 
   get inputKeys(): string[] {
-    return this.llmChain.inputKeys.filter((k) => k !== "agent_scratchpad");
+    return this.llmChain.inputKeys.filter(
+      (k: string) => k !== "agent_scratchpad"
+    );
   }
 
   constructor(input: AgentInput) {
@@ -270,11 +272,11 @@ export abstract class Agent extends BaseSingleActionAgent {
 
   private async _plan(
     steps: AgentStep[],
-    inputs: ChainValues,
+    inputs: ChainValues<any, any>,
     suffix?: string
   ): Promise<AgentAction | AgentFinish> {
     const thoughts = this.constructScratchPad(steps);
-    const newInputs: ChainValues = {
+    const newInputs: ChainValues<any, any> = {
       ...inputs,
       agent_scratchpad: suffix ? `${thoughts}${suffix}` : thoughts,
     };
@@ -309,7 +311,7 @@ export abstract class Agent extends BaseSingleActionAgent {
    */
   plan(
     steps: AgentStep[],
-    inputs: ChainValues
+    inputs: ChainValues<any, any>
   ): Promise<AgentAction | AgentFinish> {
     return this._plan(steps, inputs);
   }
@@ -320,7 +322,7 @@ export abstract class Agent extends BaseSingleActionAgent {
   async returnStoppedResponse(
     earlyStoppingMethod: StoppingMethod,
     steps: AgentStep[],
-    inputs: ChainValues
+    inputs: ChainValues<any, any>
   ): Promise<AgentFinish> {
     if (earlyStoppingMethod === "force") {
       return {

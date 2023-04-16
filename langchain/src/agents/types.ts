@@ -3,7 +3,7 @@ import { SerializedLLMChain } from "../chains/serde.js";
 import { BaseOutputParser, AgentAction, AgentFinish } from "../schema/index.js";
 
 export interface AgentInput {
-  llmChain: LLMChain;
+  llmChain: LLMChain<any, any, any, any>;
   allowedTools?: string[];
 }
 

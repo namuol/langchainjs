@@ -1,11 +1,12 @@
-import { InputValues, MemoryVariables, getBufferString } from "./base.js";
+import { InputValues } from "../schema/index.js";
+import { MemoryVariables, getBufferString } from "./base.js";
 import { BaseChatMemory, BaseMemoryInput } from "./chat_memory.js";
 
 export interface BufferMemoryInput<
-  I extends string,
+  K extends string,
   O extends string,
   MI extends string
-> extends BaseMemoryInput<I, O> {
+> extends BaseMemoryInput<K, O> {
   memoryKey: MI;
 
   // FIXME: Are these used anywhere?
@@ -15,9 +16,14 @@ export interface BufferMemoryInput<
   aiPrefix: string;
 }
 
-export class BufferMemory<I extends string, O extends string, MI extends string>
-  extends BaseChatMemory<I, O, MI>
-  implements BufferMemoryInput<I, O, MI>
+export class BufferMemory<
+    K extends string,
+    P extends string,
+    O extends string,
+    MI extends string
+  >
+  extends BaseChatMemory<K, P, O, MI>
+  implements BufferMemoryInput<K, O, MI>
 {
   humanPrefix = "Human";
 
@@ -25,7 +31,7 @@ export class BufferMemory<I extends string, O extends string, MI extends string>
 
   memoryKey: MI = "history" as MI;
 
-  constructor(fields?: Partial<BufferMemoryInput<I, O, MI>>) {
+  constructor(fields?: Partial<BufferMemoryInput<K, O, MI>>) {
     super({
       chatHistory: fields?.chatHistory,
       returnMessages: fields?.returnMessages ?? false,
@@ -38,7 +44,7 @@ export class BufferMemory<I extends string, O extends string, MI extends string>
   }
 
   async loadMemoryVariables(
-    _values: InputValues<I>
+    _values: InputValues<K, P>
   ): Promise<MemoryVariables<MI>> {
     // FIXME: This should return Record<"history", BaseChatMessage[] | string[]>
     if (this.returnMessages) {

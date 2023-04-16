@@ -27,14 +27,14 @@ Helpful Answer:`;
 export interface ChatVectorDBQAChainInput {
   vectorstore: VectorStore;
   k: number;
-  combineDocumentsChain: BaseChain;
-  questionGeneratorChain: LLMChain;
+  combineDocumentsChain: BaseChain<any, any, any, any>;
+  questionGeneratorChain: LLMChain<any, any, any, any>;
   outputKey: string;
   inputKey: string;
 }
 
 export class ChatVectorDBQAChain
-  extends BaseChain
+  extends BaseChain<any, any, any, any>
   implements ChatVectorDBQAChainInput
 {
   k = 4;
@@ -51,16 +51,16 @@ export class ChatVectorDBQAChain
 
   vectorstore: VectorStore;
 
-  combineDocumentsChain: BaseChain;
+  combineDocumentsChain: BaseChain<any, any, any, any>;
 
-  questionGeneratorChain: LLMChain;
+  questionGeneratorChain: LLMChain<any, any, any, any>;
 
   returnSourceDocuments = false;
 
   constructor(fields: {
     vectorstore: VectorStore;
-    combineDocumentsChain: BaseChain;
-    questionGeneratorChain: LLMChain;
+    combineDocumentsChain: BaseChain<any, any, any, any>;
+    questionGeneratorChain: LLMChain<any, any, any, any>;
     inputKey?: string;
     outputKey?: string;
     k?: number;
@@ -77,7 +77,7 @@ export class ChatVectorDBQAChain
       fields.returnSourceDocuments ?? this.returnSourceDocuments;
   }
 
-  async _call(values: ChainValues): Promise<ChainValues> {
+  async _call(values: ChainValues<any, any>): Promise<ChainValues<any, any>> {
     if (!(this.inputKey in values)) {
       throw new Error(`Question key ${this.inputKey} not found.`);
     }

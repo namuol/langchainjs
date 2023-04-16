@@ -10,6 +10,7 @@ import {
   ChatMessage,
   HumanChatMessage,
   SystemChatMessage,
+  InputValues,
 } from "../schema/index.js";
 import { PromptTemplate } from "./prompt.js";
 import {
@@ -24,7 +25,7 @@ export abstract class BaseMessagePromptTemplate<
   abstract inputVariables: K[];
 
   abstract formatMessages(
-    values: Record<K, any> & Partial<Record<P, any>>
+    values: InputValues<K, P>
   ): Promise<BaseChatMessage[]>;
 
   serialize(): SerializedMessagePromptTemplate {
@@ -67,9 +68,7 @@ export class MessagesPlaceholder<
     return [this.variableName];
   }
 
-  formatMessages(
-    values: Record<K, any> & Partial<Record<P, any>>
-  ): Promise<BaseChatMessage[]> {
+  formatMessages(values: InputValues<K, P>): Promise<BaseChatMessage[]> {
     return Promise.resolve(values[this.variableName] as BaseChatMessage[]);
   }
 }
@@ -89,13 +88,9 @@ export abstract class BaseMessageStringPromptTemplate<
     return this.prompt.inputVariables;
   }
 
-  abstract format(
-    values: Record<K, any> & Partial<Record<P, any>>
-  ): Promise<BaseChatMessage>;
+  abstract format(values: InputValues<K, P>): Promise<BaseChatMessage>;
 
-  async formatMessages(
-    values: Record<K, any> & Partial<Record<P, any>>
-  ): Promise<BaseChatMessage[]> {
+  async formatMessages(values: InputValues<K, P>): Promise<BaseChatMessage[]> {
     return [await this.format(values)];
   }
 }
@@ -109,18 +104,14 @@ export abstract class BaseChatPromptTemplate<
   }
 
   abstract formatMessages(
-    values: Record<K, any> & Partial<Record<P, any>>
+    values: InputValues<K, P>
   ): Promise<BaseChatMessage[]>;
 
-  async format(
-    values: Record<K, any> & Partial<Record<P, any>>
-  ): Promise<string> {
+  async format(values: InputValues<K, P>): Promise<string> {
     return (await this.formatPromptValue(values)).toString();
   }
 
-  async formatPromptValue(
-    values: Record<K, any> & Partial<Record<P, any>>
-  ): Promise<BasePromptValue> {
+  async formatPromptValue(values: InputValues<K, P>): Promise<BasePromptValue> {
     const resultMessages = await this.formatMessages(values);
     return new ChatPromptValue(resultMessages);
   }
@@ -132,9 +123,7 @@ export class ChatMessagePromptTemplate<
 > extends BaseMessageStringPromptTemplate<K, P> {
   role: string;
 
-  async format(
-    values: Record<K, any> & Partial<Record<P, any>>
-  ): Promise<BaseChatMessage> {
+  async format(values: InputValues<K, P>): Promise<BaseChatMessage> {
     return new ChatMessage(await this.prompt.format(values), this.role);
   }
 
@@ -155,9 +144,7 @@ export class HumanMessagePromptTemplate<
   K extends string,
   P extends string
 > extends BaseMessageStringPromptTemplate<K, P> {
-  async format(
-    values: Record<K, any> & Partial<Record<P, any>>
-  ): Promise<BaseChatMessage> {
+  async format(values: InputValues<K, P>): Promise<BaseChatMessage> {
     return new HumanChatMessage(await this.prompt.format(values));
   }
 
@@ -176,9 +163,7 @@ export class AIMessagePromptTemplate<
   K extends string,
   P extends string
 > extends BaseMessageStringPromptTemplate<K, P> {
-  async format(
-    values: Record<K, any> & Partial<Record<P, any>>
-  ): Promise<BaseChatMessage> {
+  async format(values: InputValues<K, P>): Promise<BaseChatMessage> {
     return new AIChatMessage(await this.prompt.format(values));
   }
 
@@ -197,9 +182,7 @@ export class SystemMessagePromptTemplate<
   K extends string,
   P extends string
 > extends BaseMessageStringPromptTemplate<K, P> {
-  async format(
-    values: Record<K, any> & Partial<Record<P, any>>
-  ): Promise<BaseChatMessage> {
+  async format(values: InputValues<K, P>): Promise<BaseChatMessage> {
     return new SystemChatMessage(await this.prompt.format(values));
   }
 
@@ -286,9 +269,7 @@ export class ChatPromptTemplate<K extends string, P extends string>
     return "chat";
   }
 
-  async formatMessages(
-    values: Record<K, any> & Partial<Record<P, any>>
-  ): Promise<BaseChatMessage[]> {
+  async formatMessages(values: InputValues<K, P>): Promise<BaseChatMessage[]> {
     const allValues = await this.mergePartialAndUserVariables(values);
 
     let resultMessages: BaseChatMessage[] = [];

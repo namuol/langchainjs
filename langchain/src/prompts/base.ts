@@ -45,10 +45,8 @@ export interface BasePromptTemplateInput<K extends string, P extends string> {
  * string prompt given a set of input values.
  * @augments BasePromptTemplateInput
  */
-export abstract class BasePromptTemplate<
-  K extends string = string,
-  P extends string = string
-> implements BasePromptTemplateInput<K, P>
+export abstract class BasePromptTemplate<K extends string, P extends string>
+  implements BasePromptTemplateInput<K, P>
 {
   inputVariables: K[];
 
@@ -157,8 +155,8 @@ export abstract class BasePromptTemplate<
 }
 
 export abstract class BaseStringPromptTemplate<
-  K extends string = string,
-  P extends string = string
+  K extends string,
+  P extends string
 > extends BasePromptTemplate<K, P> {
   async formatPromptValue(
     values: Record<K, any> & Partial<Record<P, any>>

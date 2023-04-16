@@ -13,12 +13,13 @@ import {
 import { SerializedLLMChain } from "./serde.js";
 
 export interface LLMChainInput<
-  I extends string = string,
-  O extends string = string,
-  MI extends string = string
-> extends ChainInputs<I, O, MI> {
+  K extends string,
+  P extends string,
+  O extends string,
+  MI extends string
+> extends ChainInputs<K, P, O, MI> {
   /** Prompt object to use */
-  prompt: BasePromptTemplate<I | MI>;
+  prompt: BasePromptTemplate<K | MI, P>;
   /** LLM Wrapper to use */
   llm: BaseLanguageModel;
   /** OutputParser to use */
@@ -43,14 +44,15 @@ export interface LLMChainInput<
  * ```
  */
 export class LLMChain<
-    I extends string = string,
-    O extends string = string,
-    MI extends string = string
+    K extends string,
+    P extends string,
+    O extends string,
+    MI extends string
   >
-  extends BaseChain<I, O, MI>
-  implements LLMChainInput<I, O, MI>
+  extends BaseChain<K, P, O, MI>
+  implements LLMChainInput<K, P, O, MI>
 {
-  prompt: BasePromptTemplate<I | MI>;
+  prompt: BasePromptTemplate<K | MI, P>;
 
   llm: BaseLanguageModel;
 
@@ -62,7 +64,7 @@ export class LLMChain<
     return this.prompt.inputVariables;
   }
 
-  constructor(fields: LLMChainInput<I, O, MI>) {
+  constructor(fields: LLMChainInput<K, P, O, MI>) {
     super(fields.memory, fields.verbose, fields.callbackManager);
     this.prompt = fields.prompt;
     this.llm = fields.llm;
@@ -93,13 +95,13 @@ export class LLMChain<
     return finalCompletion;
   }
 
-  async _call(values: ChainValues<I>): Promise<ChainValues<O>> {
+  async _call(values: ChainValues<K, P>): Promise<ChainValues<O, never>> {
     let stop;
     if ("stop" in values && Array.isArray(values.stop)) {
       stop = values.stop;
     }
     const promptValue = await this.prompt.formatPromptValue(
-      values as Record<I, any> & Partial<Record<MI, any>>
+      values as ChainValues<K | MI, P>
     );
     const { generations } = await this.llm.generatePrompt([promptValue], stop);
     return {
@@ -107,7 +109,7 @@ export class LLMChain<
         generations[0],
         promptValue
       ),
-    } as ChainValues<O>;
+    } as ChainValues<O, never>;
   }
 
   /**
@@ -121,7 +123,7 @@ export class LLMChain<
    * llm.predict({ adjective: "funny" })
    * ```
    */
-  async predict(values: ChainValues<I>): Promise<string> {
+  async predict(values: ChainValues<K, P>): Promise<string> {
     const output = await this.call(values);
     return output[this.outputKey as O];
   }
@@ -130,7 +132,9 @@ export class LLMChain<
     return "llm_chain" as const;
   }
 
-  static async deserialize(data: SerializedLLMChain) {
+  static async deserialize(
+    data: SerializedLLMChain
+  ): Promise<LLMChain<any, any, any, any>> {
     const { llm, prompt } = data;
     if (!llm) {
       throw new Error("LLMChain must have llm");
@@ -170,15 +174,16 @@ AI:`;
 // maintaining type-safety, due to the need to union various parametric types
 // which can be non-narrow `string`.
 export class ConversationChain extends LLMChain<
-  "input",
-  "response",
-  "history"
+  "input", // Required
+  never, // Provided
+  "response", // Output
+  "history" // Memory-provided
 > {
   constructor(fields: {
     llm: BaseLanguageModel;
-    prompt?: BasePromptTemplate<"input" | "history">;
+    prompt?: BasePromptTemplate<"input" | "history", never>;
     outputKey?: "response";
-    memory?: BaseMemory<"input", "response", "history">;
+    memory?: BaseMemory<"input", never, "response", "history">;
   }) {
     super({
       prompt:
@@ -191,6 +196,7 @@ export class ConversationChain extends LLMChain<
       outputKey: fields.outputKey ?? "response",
     });
     this.memory =
-      fields.memory ?? new BufferMemory<"input", "response", "history">();
+      fields.memory ??
+      new BufferMemory<"input", never, "response", "history">();
   }
 }

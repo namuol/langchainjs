@@ -7,11 +7,12 @@ import { SerializedBaseChain } from "./serde.js";
 export type LoadValues = Record<string, any>;
 
 export interface ChainInputs<
-  I extends string = string,
-  O extends string = string,
-  MI extends string = string
+  K extends string,
+  P extends string,
+  O extends string,
+  MI extends string
 > {
-  memory?: BaseMemory<I, O, MI>;
+  memory?: BaseMemory<K, P, O, MI>;
   verbose?: boolean;
   callbackManager?: CallbackManager;
 }
@@ -22,19 +23,20 @@ const getVerbosity = () => false;
  * Base interface that all chains must implement.
  */
 export abstract class BaseChain<
-  I extends string = string,
-  O extends string = string,
-  MI extends string = string
-> implements ChainInputs<I, O, MI>
+  K extends string,
+  P extends string,
+  O extends string,
+  MI extends string
+> implements ChainInputs<K, P, O, MI>
 {
-  memory?: BaseMemory<I, O, MI>;
+  memory?: BaseMemory<K, P, O, MI>;
 
   verbose: boolean;
 
   callbackManager: CallbackManager;
 
   constructor(
-    memory?: BaseMemory<I, O, MI>,
+    memory?: BaseMemory<K, P, O, MI>,
     verbose?: boolean,
     callbackManager?: CallbackManager
   ) {
@@ -46,7 +48,9 @@ export abstract class BaseChain<
   /**
    * Run the core logic of this chain and return the output
    */
-  abstract _call(values: ChainValues<I | MI>): Promise<ChainValues<O>>;
+  abstract _call(
+    values: ChainValues<K | MI, P>
+  ): Promise<ChainValues<O, never>>;
 
   /**
    * Return the string type key uniquely identifying this class of chain.
@@ -58,7 +62,7 @@ export abstract class BaseChain<
    */
   abstract serialize(): SerializedBaseChain;
 
-  abstract get inputKeys(): (I | MI)[];
+  abstract get inputKeys(): (K | MI)[];
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async run(input: any): Promise<string> {
@@ -68,7 +72,7 @@ export abstract class BaseChain<
         `Chain ${this._chainType()} expects multiple inputs, cannot use 'run' `
       );
     }
-    const values = { [this.inputKeys[0]]: input } as ChainValues<I | MI>;
+    const values = { [this.inputKeys[0]]: input } as ChainValues<K | MI, P>;
     const returnValues = await this.call(values);
     const keys = Object.keys(returnValues) as O[];
     if (keys.length === 1) {
@@ -85,12 +89,12 @@ export abstract class BaseChain<
    *
    * Wraps {@link _call} and handles memory.
    */
-  async call(values: ChainValues<I>): Promise<ChainValues<O>> {
-    const fullValues = { ...values } as ChainValues<I | MI>;
+  async call(values: ChainValues<K, P>): Promise<ChainValues<O, never>> {
+    const fullValues = { ...values } as ChainValues<K | MI, P>;
     if (!(this.memory == null)) {
       const newValues = await this.memory.loadMemoryVariables(values);
       for (const [key, value] of Object.entries(newValues)) {
-        fullValues[key as I] = value;
+        fullValues[key as MI] = value as any;
       }
     }
     await this.callbackManager.handleChainStart(
@@ -115,7 +119,7 @@ export abstract class BaseChain<
   /**
    * Call the chain on all inputs in the list
    */
-  async apply(inputs: ChainValues<I>[]): Promise<ChainValues<O>[]> {
+  async apply(inputs: ChainValues<K, P>[]): Promise<ChainValues<O, never>[]> {
     return Promise.all(inputs.map(async (i) => this.call(i)));
   }
 
@@ -125,7 +129,7 @@ export abstract class BaseChain<
   static async deserialize(
     data: SerializedBaseChain,
     values: LoadValues = {}
-  ): Promise<BaseChain<string, string, string>> {
+  ): Promise<BaseChain<string, string, string, string>> {
     switch (data._type) {
       case "llm_chain": {
         const { LLMChain } = await import("./llm_chain.js");

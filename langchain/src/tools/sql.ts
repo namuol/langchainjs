@@ -99,9 +99,9 @@ Double check the sqlite query above for common mistakes, including:
 
 If there are any of the above mistakes, rewrite the query. If there are no mistakes, just reproduce the original query.`;
 
-  llmChain: LLMChain;
+  llmChain: LLMChain<any, any, any, any>;
 
-  constructor(llmChain?: LLMChain) {
+  constructor(llmChain?: LLMChain<any, any, any, any>) {
     super();
     if (llmChain) {
       this.llmChain = llmChain;

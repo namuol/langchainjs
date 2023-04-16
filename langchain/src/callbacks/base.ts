@@ -30,13 +30,16 @@ abstract class BaseCallbackHandlerMethods {
 
   handleChainStart?(
     chain: { name: string },
-    inputs: ChainValues,
+    inputs: ChainValues<any, any>,
     verbose?: boolean
   ): Promise<void>;
 
   handleChainError?(err: Error, verbose?: boolean): Promise<void>;
 
-  handleChainEnd?(outputs: ChainValues, verbose?: boolean): Promise<void>;
+  handleChainEnd?(
+    outputs: ChainValues<any, any>,
+    verbose?: boolean
+  ): Promise<void>;
 
   handleToolStart?(
     tool: { name: string },
@@ -168,7 +171,7 @@ export class CallbackManager extends BaseCallbackManager {
 
   async handleChainStart(
     chain: { name: string },
-    inputs: ChainValues,
+    inputs: ChainValues<any, any>,
     verbose?: boolean
   ): Promise<void> {
     await Promise.all(
@@ -202,7 +205,10 @@ export class CallbackManager extends BaseCallbackManager {
     );
   }
 
-  async handleChainEnd(output: ChainValues, verbose?: boolean): Promise<void> {
+  async handleChainEnd(
+    output: ChainValues<any, any>,
+    verbose?: boolean
+  ): Promise<void> {
     await Promise.all(
       this.handlers.map(async (handler) => {
         if (!handler.ignoreChain && (verbose || handler.alwaysVerbose)) {
@@ -354,7 +360,7 @@ export class ConsoleCallbackHandler extends BaseCallbackHandler {
     console.log(`Entering new ${chain.name} chain...`);
   }
 
-  async handleChainEnd(_output: ChainValues) {
+  async handleChainEnd(_output: ChainValues<any, any>) {
     console.log("Finished chain.");
   }
 

@@ -1,34 +1,34 @@
 import { BaseLanguageModel } from "../base_language/index.js";
 import { LLMChain } from "../chains/llm_chain.js";
 import { BasePromptTemplate } from "../prompts/base.js";
-import { BaseChatMessage, SystemChatMessage } from "../schema/index.js";
 import {
-  getBufferString,
+  BaseChatMessage,
+  SystemChatMessage,
   InputValues,
-  MemoryVariables,
-  OutputValues,
-} from "./base.js";
+} from "../schema/index.js";
+import { getBufferString, MemoryVariables, OutputValues } from "./base.js";
 import { BaseChatMemory, BaseMemoryInput } from "./chat_memory.js";
 import { SUMMARY_PROMPT } from "./prompt.js";
 
 export type ConversationSummaryMemoryInput<
-  I extends string,
+  K extends string,
   O extends string,
   MI extends string
-> = BaseMemoryInput<I, O> & {
+> = BaseMemoryInput<K, O> & {
   memoryKey?: MI;
   humanPrefix?: string;
   aiPrefix?: string;
   llm: BaseLanguageModel;
-  prompt?: BasePromptTemplate;
+  prompt?: BasePromptTemplate<any, any>;
   summaryChatMessageClass?: new (content: string) => BaseChatMessage;
 };
 
 export class ConversationSummaryMemory<
-  I extends string,
+  K extends string,
+  P extends string,
   O extends string,
   MI extends string
-> extends BaseChatMemory<I, O, MI> {
+> extends BaseChatMemory<K, P, O, MI> {
   buffer = "";
 
   memoryKey = "history" as MI;
@@ -39,12 +39,12 @@ export class ConversationSummaryMemory<
 
   llm: BaseLanguageModel;
 
-  prompt: BasePromptTemplate = SUMMARY_PROMPT;
+  prompt: BasePromptTemplate<any, any> = SUMMARY_PROMPT;
 
   summaryChatMessageClass: new (content: string) => BaseChatMessage =
     SystemChatMessage;
 
-  constructor(fields?: ConversationSummaryMemoryInput<I, O, MI>) {
+  constructor(fields?: ConversationSummaryMemoryInput<K, O, MI>) {
     const {
       returnMessages,
       inputKey,
@@ -80,7 +80,7 @@ export class ConversationSummaryMemory<
     });
   }
 
-  async loadMemoryVariables(_: InputValues): Promise<MemoryVariables> {
+  async loadMemoryVariables(_: InputValues<K, P>): Promise<MemoryVariables> {
     if (this.returnMessages) {
       const result = {
         [this.memoryKey]: [new this.summaryChatMessageClass(this.buffer)],
@@ -92,7 +92,7 @@ export class ConversationSummaryMemory<
   }
 
   async saveContext(
-    inputValues: InputValues,
+    inputValues: InputValues<any, any>,
     outputValues: OutputValues
   ): Promise<void> {
     await super.saveContext(inputValues, outputValues);
