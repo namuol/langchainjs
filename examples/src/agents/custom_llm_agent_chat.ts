@@ -13,7 +13,6 @@ import {
 } from "langchain/prompts";
 import {
   InputValues,
-  PartialValues,
   AgentStep,
   AgentAction,
   AgentFinish,
@@ -51,7 +50,9 @@ class CustomPromptTemplate extends BaseChatPromptTemplate {
     throw new Error("Not implemented");
   }
 
-  async formatMessages(values: InputValues): Promise<BaseChatMessage[]> {
+  async formatMessages(
+    values: InputValues<any, any>
+  ): Promise<BaseChatMessage[]> {
     /** Construct the final template */
     const toolStrings = this.tools
       .map((tool) => `${tool.name}: ${tool.description}`)
@@ -73,7 +74,9 @@ class CustomPromptTemplate extends BaseChatPromptTemplate {
     return [new HumanChatMessage(formatted)];
   }
 
-  partial(_values: PartialValues): Promise<BasePromptTemplate> {
+  partial<P2 extends string>(
+    _values: Record<P2, any>
+  ): Promise<BasePromptTemplate<Exclude<string, P2>, string>> {
     throw new Error("Not implemented");
   }
 

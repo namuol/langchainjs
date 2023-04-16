@@ -12,13 +12,16 @@ export type LoadValues = Record<string, any>;
 export interface VectorDBQAChainInput {
   vectorstore: VectorStore;
   k: number;
-  combineDocumentsChain: BaseChain;
+  combineDocumentsChain: BaseChain<any, any, any, any>;
   outputKey: string;
   inputKey: string;
   returnSourceDocuments?: boolean;
 }
 
-export class VectorDBQAChain extends BaseChain implements VectorDBQAChainInput {
+export class VectorDBQAChain
+  extends BaseChain<any, any, any, any>
+  implements VectorDBQAChainInput
+{
   k = 4;
 
   inputKey = "query";
@@ -31,13 +34,13 @@ export class VectorDBQAChain extends BaseChain implements VectorDBQAChainInput {
 
   vectorstore: VectorStore;
 
-  combineDocumentsChain: BaseChain;
+  combineDocumentsChain: BaseChain<any, any, any, any>;
 
   returnSourceDocuments = false;
 
   constructor(fields: {
     vectorstore: VectorStore;
-    combineDocumentsChain: BaseChain;
+    combineDocumentsChain: BaseChain<any, any, any, any>;
     inputKey?: string;
     outputKey?: string;
     k?: number;
@@ -53,7 +56,7 @@ export class VectorDBQAChain extends BaseChain implements VectorDBQAChainInput {
       fields.returnSourceDocuments ?? this.returnSourceDocuments;
   }
 
-  async _call(values: ChainValues): Promise<ChainValues> {
+  async _call(values: ChainValues<any, any>): Promise<ChainValues<any, any>> {
     if (!(this.inputKey in values)) {
       throw new Error(`Question key ${this.inputKey} not found.`);
     }

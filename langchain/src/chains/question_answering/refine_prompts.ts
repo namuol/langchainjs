@@ -34,9 +34,15 @@ Given the new context, refine the original answer to better answer the question.
 If the context isn't useful, return the original answer.`;
 
 const messages = [
-  /*#__PURE__*/ HumanMessagePromptTemplate.fromTemplate("{question}"),
-  /*#__PURE__*/ AIMessagePromptTemplate.fromTemplate("{existing_answer}"),
-  /*#__PURE__*/ HumanMessagePromptTemplate.fromTemplate(refineTemplate),
+  /*#__PURE__*/ HumanMessagePromptTemplate.fromTemplate<"question">(
+    "{question}"
+  ),
+  /*#__PURE__*/ AIMessagePromptTemplate.fromTemplate<"existing_answer">(
+    "{existing_answer}"
+  ),
+  /*#__PURE__*/ HumanMessagePromptTemplate.fromTemplate<
+    "question" | "existing_answer" | "context"
+  >(refineTemplate),
 ];
 
 export const CHAT_REFINE_PROMPT =

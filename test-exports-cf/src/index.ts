@@ -43,7 +43,7 @@ export default {
     const chain = new LLMChain({
       llm: new ChatOpenAI({ openAIApiKey: env.OPENAI_API_KEY }),
       prompt: ChatPromptTemplate.fromPromptMessages([
-        HumanMessagePromptTemplate.fromTemplate("{input}"),
+        HumanMessagePromptTemplate.fromTemplate<"input">("{input}"),
       ]),
     });
     const res = await chain.run("hello");

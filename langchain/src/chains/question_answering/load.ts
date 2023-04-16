@@ -18,13 +18,14 @@ import {
   REFINE_PROMPT_SELECTOR,
 } from "./refine_prompts.js";
 
+type QAPromptTemplate = BasePromptTemplate<"context" | "question", string>;
 interface qaChainParams {
-  prompt?: BasePromptTemplate;
-  combineMapPrompt?: BasePromptTemplate;
-  combinePrompt?: BasePromptTemplate;
-  questionPrompt?: BasePromptTemplate;
-  refinePrompt?: BasePromptTemplate;
-  type?: string;
+  prompt?: QAPromptTemplate;
+  combineMapPrompt?: QAPromptTemplate;
+  combinePrompt?: QAPromptTemplate;
+  questionPrompt?: QAPromptTemplate;
+  refinePrompt?: QAPromptTemplate;
+  type?: "stuff" | "map_reduce";
 }
 export const loadQAChain = (
   llm: BaseLanguageModel,
@@ -71,23 +72,30 @@ export const loadQAChain = (
   throw new Error(`Invalid _type: ${type}`);
 };
 
-interface StuffQAChainParams {
-  prompt?: BasePromptTemplate;
+interface StuffQAChainParams<K extends string, P extends string> {
+  prompt?: BasePromptTemplate<K, P>;
 }
 
-export const loadQAStuffChain = (
+export const loadQAStuffChain = <
+  // Default to `"question"` as derived from `QA_PROMPT_SELECTOR.getPrompt(llm)`
+  //
+  // What I don't understand is, where does `"context"` come from? Is it just
+  // technically optional?
+  K extends string = "question",
+  P extends string = never
+>(
   llm: BaseLanguageModel,
-  params: StuffQAChainParams = {}
+  params: StuffQAChainParams<K, P> = {}
 ) => {
   const { prompt = QA_PROMPT_SELECTOR.getPrompt(llm) } = params;
-  const llmChain = new LLMChain({ prompt, llm });
+  const llmChain = new LLMChain({ prompt: prompt as any, llm });
   const chain = new StuffDocumentsChain({ llmChain });
-  return chain;
+  return chain as StuffDocumentsChain<K, P, "text", string, "input_documents">;
 };
 
 interface MapReduceQAChainParams {
-  combineMapPrompt?: BasePromptTemplate;
-  combinePrompt?: BasePromptTemplate;
+  combineMapPrompt?: BasePromptTemplate<any, any>;
+  combinePrompt?: BasePromptTemplate<any, any>;
 }
 
 export const loadQAMapReduceChain = (
@@ -112,8 +120,8 @@ export const loadQAMapReduceChain = (
 };
 
 interface RefineQAChainParams {
-  questionPrompt?: BasePromptTemplate;
-  refinePrompt?: BasePromptTemplate;
+  questionPrompt?: BasePromptTemplate<any, any>;
+  refinePrompt?: BasePromptTemplate<any, any>;
 }
 
 export const loadQARefineChain = (

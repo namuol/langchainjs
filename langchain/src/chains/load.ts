@@ -3,7 +3,7 @@ import { loadFromHub } from "../util/hub.js";
 import { FileLoader, LoadValues, loadFromFile } from "../util/load.js";
 import { parseFileConfig } from "../util/parse.js";
 
-const loadChainFromFile: FileLoader<BaseChain> = async (
+const loadChainFromFile: FileLoader<BaseChain<any, any, any, any>> = async (
   file: string,
   path: string,
   values: LoadValues = {}
@@ -33,7 +33,7 @@ const loadChainFromFile: FileLoader<BaseChain> = async (
 export const loadChain = async (
   uri: string,
   values: LoadValues = {}
-): Promise<BaseChain> => {
+): Promise<BaseChain<any, any, any, any>> => {
   const hubResult = await loadFromHub(
     uri,
     loadChainFromFile,

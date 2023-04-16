@@ -13,7 +13,7 @@ import {
   getModelContextSize,
 } from "../../base_language/count_tokens.js";
 
-export class SqlDatabaseChain extends BaseChain {
+export class SqlDatabaseChain extends BaseChain<any, any, any, any> {
   // LLM wrapper to use
   llm: BaseLanguageModel;
 
@@ -38,7 +38,7 @@ export class SqlDatabaseChain extends BaseChain {
     database: SqlDatabase;
     inputKey?: string;
     outputKey?: string;
-    memory?: BaseMemory;
+    memory?: BaseMemory<any, any, any, any>;
   }) {
     const { memory } = fields;
     super(memory);
@@ -48,7 +48,7 @@ export class SqlDatabaseChain extends BaseChain {
     this.outputKey = fields.outputKey ?? this.outputKey;
   }
 
-  async _call(values: ChainValues): Promise<ChainValues> {
+  async _call(values: ChainValues<any, any>): Promise<ChainValues<any, any>> {
     const lLMChain = new LLMChain({
       prompt: this.prompt,
       llm: this.llm,

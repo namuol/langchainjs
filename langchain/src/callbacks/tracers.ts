@@ -31,8 +31,8 @@ export interface LLMRun extends BaseRun {
 }
 
 export interface ChainRun extends BaseRun {
-  inputs: ChainValues;
-  outputs?: ChainValues;
+  inputs: ChainValues<any, any>;
+  outputs?: ChainValues<any, any>;
   child_llm_runs: LLMRun[];
   child_chain_runs: ChainRun[];
   child_tool_runs: ToolRun[];
@@ -165,7 +165,7 @@ export abstract class BaseTracer extends BaseCallbackHandler {
 
   async handleChainStart(
     chain: { name: string },
-    inputs: ChainValues,
+    inputs: ChainValues<any, any>,
     _verbose?: boolean
   ): Promise<void> {
     if (this.session === undefined) {
@@ -188,7 +188,7 @@ export abstract class BaseTracer extends BaseCallbackHandler {
   }
 
   async handleChainEnd(
-    outputs: ChainValues,
+    outputs: ChainValues<any, any>,
     _verbose?: boolean
   ): Promise<void> {
     if (this.stack.length === 0 || this.stack.at(-1)?.type !== "chain") {

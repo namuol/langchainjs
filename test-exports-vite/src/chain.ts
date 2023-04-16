@@ -27,7 +27,7 @@ export function setupChain(element: HTMLButtonElement) {
     const chain = new LLMChain({
       llm,
       prompt: ChatPromptTemplate.fromPromptMessages([
-        HumanMessagePromptTemplate.fromTemplate("{input}"),
+        HumanMessagePromptTemplate.fromTemplate<"input">("{input}"),
       ]),
     });
     const res = await chain.run("hello");

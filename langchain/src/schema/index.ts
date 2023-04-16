@@ -1,9 +1,13 @@
 import { Document } from "../document.js";
 
-export type Example = Record<string, string>;
+export type Example<
+  K extends string = string,
+  P extends string = string
+> = Record<K, any> & Partial<Record<P, any>>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type InputValues = Record<string, any>;
+export type InputValues<K extends string, P extends string> = Record<K, any> &
+  Partial<Record<P, any>>;
 
 export type PartialValues = Record<
   string,
@@ -125,7 +129,9 @@ export type AgentStep = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type ChainValues = Record<string, any>;
+export type ChainValues<K extends string, P extends string> = Record<K, any> &
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Partial<Record<P, any>>;
 
 /**
  * Base Index class. All indexes should extend this class.

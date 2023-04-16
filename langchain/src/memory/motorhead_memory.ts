@@ -1,10 +1,6 @@
+import { InputValues } from "../schema/index.js";
 import { BaseChatMemory, BaseMemoryInput } from "./chat_memory.js";
-import {
-  InputValues,
-  OutputValues,
-  MemoryVariables,
-  getBufferString,
-} from "./base.js";
+import { OutputValues, MemoryVariables, getBufferString } from "./base.js";
 import { AsyncCaller, AsyncCallerParams } from "../util/async_caller.js";
 
 export interface MotorheadMemoryMessage {
@@ -12,15 +8,24 @@ export interface MotorheadMemoryMessage {
   content: string;
 }
 
-export type MotorheadMemoryInput = BaseMemoryInput &
+export type MotorheadMemoryInput<
+  K extends string,
+  O extends string,
+  MI extends string
+> = BaseMemoryInput<K, O> &
   AsyncCallerParams & {
     sessionId: string;
     motorheadURL?: string;
-    memoryKey?: string;
+    memoryKey?: MI;
     timeout?: number;
   };
 
-export class MotorheadMemory extends BaseChatMemory {
+export class MotorheadMemory<
+  K extends string,
+  P extends string,
+  O extends string,
+  MI extends string
+> extends BaseChatMemory<K, P, O, MI> {
   motorheadURL = "localhost:8080";
 
   timeout = 3000;
@@ -33,7 +38,7 @@ export class MotorheadMemory extends BaseChatMemory {
 
   caller: AsyncCaller;
 
-  constructor(fields: MotorheadMemoryInput) {
+  constructor(fields: MotorheadMemoryInput<K, O, MI>) {
     const {
       sessionId,
       motorheadURL,
@@ -81,7 +86,9 @@ export class MotorheadMemory extends BaseChatMemory {
     }
   }
 
-  async loadMemoryVariables(_values: InputValues): Promise<MemoryVariables> {
+  async loadMemoryVariables(
+    _values: InputValues<K, P>
+  ): Promise<MemoryVariables> {
     if (this.returnMessages) {
       const result = {
         [this.memoryKey]: this.chatHistory.messages,
@@ -95,7 +102,7 @@ export class MotorheadMemory extends BaseChatMemory {
   }
 
   async saveContext(
-    inputValues: InputValues,
+    inputValues: InputValues<K | "input", P>,
     outputValues: OutputValues
   ): Promise<void> {
     await Promise.all([

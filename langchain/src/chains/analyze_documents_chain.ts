@@ -11,7 +11,7 @@ export type LoadValues = Record<string, any>;
 
 export interface AnalyzeDocumentChainInput {
   textSplitter: TextSplitter;
-  combineDocumentsChain: BaseChain;
+  combineDocumentsChain: BaseChain<any, any, any, any>;
 }
 
 /**
@@ -20,19 +20,19 @@ export interface AnalyzeDocumentChainInput {
  * @augments StuffDocumentsChainInput
  */
 export class AnalyzeDocumentChain
-  extends BaseChain
+  extends BaseChain<any, any, any, any>
   implements AnalyzeDocumentChainInput
 {
   inputKey = "input_document";
 
   outputKey = "output_text";
 
-  combineDocumentsChain: BaseChain;
+  combineDocumentsChain: BaseChain<any, any, any, any>;
 
   textSplitter: TextSplitter;
 
   constructor(fields: {
-    combineDocumentsChain: BaseChain;
+    combineDocumentsChain: BaseChain<any, any, any, any>;
     inputKey?: string;
     outputKey?: string;
     textSplitter?: TextSplitter;
@@ -49,7 +49,7 @@ export class AnalyzeDocumentChain
     return [this.inputKey];
   }
 
-  async _call(values: ChainValues): Promise<ChainValues> {
+  async _call(values: ChainValues<any, any>): Promise<ChainValues<any, any>> {
     if (!(this.inputKey in values)) {
       throw new Error(`Document key ${this.inputKey} not found.`);
     }

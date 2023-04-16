@@ -63,13 +63,13 @@ class FakeCallbackHandler extends BaseCallbackHandler {
 
   async handleChainStart(
     _chain: { name: string },
-    _inputs: ChainValues
+    _inputs: ChainValues<any, any>
   ): Promise<void> {
     this.starts += 1;
     this.chainStarts += 1;
   }
 
-  async handleChainEnd(_outputs: ChainValues): Promise<void> {
+  async handleChainEnd(_outputs: ChainValues<any, any>): Promise<void> {
     this.ends += 1;
     this.chainEnds += 1;
   }

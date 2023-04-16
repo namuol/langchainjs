@@ -7,17 +7,17 @@ import { NAIVE_FIX_PROMPT } from "./prompts.js";
 export class OutputFixingParser extends BaseOutputParser {
   parser: BaseOutputParser;
 
-  retryChain: LLMChain;
+  retryChain: LLMChain<any, any, any, any>;
 
   static fromLLM(
     llm: BaseLanguageModel,
     parser: BaseOutputParser,
     fields?: {
-      prompt?: BasePromptTemplate;
+      prompt?: BasePromptTemplate<any, any>;
     }
   ) {
     const prompt = fields?.prompt ?? NAIVE_FIX_PROMPT;
-    const chain = new LLMChain({ llm, prompt });
+    const chain = new LLMChain<any, any, any, any>({ llm, prompt });
     return new OutputFixingParser({ parser, retryChain: chain });
   }
 
@@ -26,7 +26,7 @@ export class OutputFixingParser extends BaseOutputParser {
     retryChain,
   }: {
     parser: BaseOutputParser;
-    retryChain: LLMChain;
+    retryChain: LLMChain<any, any, any, any>;
   }) {
     super();
     this.parser = parser;

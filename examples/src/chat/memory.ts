@@ -12,11 +12,11 @@ export const run = async () => {
   const chat = new ChatOpenAI({ temperature: 0 });
 
   const chatPrompt = ChatPromptTemplate.fromPromptMessages([
-    SystemMessagePromptTemplate.fromTemplate(
+    SystemMessagePromptTemplate.fromTemplate<never>(
       "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know."
     ),
     new MessagesPlaceholder("history"),
-    HumanMessagePromptTemplate.fromTemplate("{input}"),
+    HumanMessagePromptTemplate.fromTemplate<"input">("{input}"),
   ]);
 
   const chain = new ConversationChain({

@@ -56,7 +56,10 @@ export const parseFString = (template: string): ParsedFStringNode[] => {
   return nodes;
 };
 
-export const interpolateFString = (template: string, values: InputValues) =>
+export const interpolateFString = (
+  template: string,
+  values: InputValues<any, any>
+) =>
   parseFString(template).reduce((res, node) => {
     if (node.type === "variable") {
       if (node.name in values) {
@@ -68,13 +71,13 @@ export const interpolateFString = (template: string, values: InputValues) =>
     return res + node.text;
   }, "");
 
-type Interpolator = (template: string, values: InputValues) => string;
+type Interpolator = (template: string, values: InputValues<any, any>) => string;
 
 type Parser = (template: string) => ParsedFStringNode[];
 
 export const DEFAULT_FORMATTER_MAPPING: Record<TemplateFormat, Interpolator> = {
   "f-string": interpolateFString,
-  jinja2: (_: string, __: InputValues) => "",
+  jinja2: (_: string, __: InputValues<any, any>) => "",
 };
 
 export const DEFAULT_PARSER_MAPPING: Record<TemplateFormat, Parser> = {
@@ -85,7 +88,7 @@ export const DEFAULT_PARSER_MAPPING: Record<TemplateFormat, Parser> = {
 export const renderTemplate = (
   template: string,
   templateFormat: TemplateFormat,
-  inputValues: InputValues
+  inputValues: InputValues<any, any>
 ) => DEFAULT_FORMATTER_MAPPING[templateFormat](template, inputValues);
 
 export const parseTemplate = (
@@ -104,10 +107,13 @@ export const checkValidTemplate = (
                          should be one of ${validFormats}`);
   }
   try {
-    const dummyInputs: InputValues = inputVariables.reduce((acc, v) => {
-      acc[v] = "foo";
-      return acc;
-    }, {} as Record<string, string>);
+    const dummyInputs: InputValues<any, any> = inputVariables.reduce(
+      (acc, v) => {
+        acc[v] = "foo";
+        return acc;
+      },
+      {} as Record<string, string>
+    );
     renderTemplate(template, templateFormat, dummyInputs);
   } catch {
     throw new Error("Invalid prompt schema.");

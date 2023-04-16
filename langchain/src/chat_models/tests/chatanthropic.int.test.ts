@@ -89,13 +89,15 @@ test("ChatAnthropic, docs, prompt templates", async () => {
     temperature: 0,
   });
 
-  const systemPrompt = PromptTemplate.fromTemplate(
+  const systemPrompt = PromptTemplate.fromTemplate<
+    "input_language" | "output_language"
+  >(
     "You are a helpful assistant that translates {input_language} to {output_language}."
   );
 
   const chatPrompt = ChatPromptTemplate.fromPromptMessages([
     new SystemMessagePromptTemplate(systemPrompt),
-    HumanMessagePromptTemplate.fromTemplate("{text}"),
+    HumanMessagePromptTemplate.fromTemplate<"text">("{text}"),
   ]);
 
   const responseA = await chat.generatePrompt([

@@ -1,25 +1,36 @@
-import { BaseChatMessage, ChatMessage } from "../schema/index.js";
+import { BaseChatMessage, ChatMessage, InputValues } from "../schema/index.js";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type InputValues = Record<string, any>;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type OutputValues = Record<string, any>;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type MemoryVariables = Record<string, any>;
+export type OutputValues<K extends string = string> = Record<K, any>;
+export type MemoryVariables<
+  K extends string = string,
+  P extends string = string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+> = Record<K, any> & Partial<Record<P, any>>;
 
-export abstract class BaseMemory {
-  abstract loadMemoryVariables(values: InputValues): Promise<MemoryVariables>;
+export abstract class BaseMemory<
+  K extends string,
+  P extends string,
+  O extends string,
+  MI extends string
+> {
+  abstract loadMemoryVariables(
+    values: InputValues<K, P>
+  ): Promise<MemoryVariables<MI>>;
 
   abstract saveContext(
-    inputValues: InputValues,
-    outputValues: OutputValues
+    inputValues: InputValues<K, P>,
+    outputValues: OutputValues<O>
   ): Promise<void>;
 }
 
-export const getInputValue = (inputValues: InputValues, inputKey?: string) => {
+export const getInputValue = <K extends string, P extends string>(
+  inputValues: InputValues<K, P>,
+  inputKey?: K
+) => {
   if (inputKey !== undefined) {
     return inputValues[inputKey];
   }
-  const keys = Object.keys(inputValues);
+  const keys = Object.keys(inputValues) as (K | P)[];
   if (keys.length === 1) {
     return inputValues[keys[0]];
   }

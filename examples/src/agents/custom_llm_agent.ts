@@ -13,7 +13,6 @@ import {
 } from "langchain/prompts";
 import {
   InputValues,
-  PartialValues,
   AgentStep,
   AgentAction,
   AgentFinish,
@@ -37,7 +36,7 @@ const SUFFIX = `Begin!
 Question: {input}
 Thought:{agent_scratchpad}`;
 
-class CustomPromptTemplate extends BaseStringPromptTemplate {
+class CustomPromptTemplate extends BaseStringPromptTemplate<any, any> {
   tools: Tool[];
 
   constructor(args: { tools: Tool[]; inputVariables: string[] }) {
@@ -49,7 +48,7 @@ class CustomPromptTemplate extends BaseStringPromptTemplate {
     throw new Error("Not implemented");
   }
 
-  format(input: InputValues): Promise<string> {
+  format(input: InputValues<any, any>): Promise<string> {
     /** Construct the final template */
     const toolStrings = this.tools
       .map((tool) => `${tool.name}: ${tool.description}`)
@@ -70,7 +69,9 @@ class CustomPromptTemplate extends BaseStringPromptTemplate {
     return Promise.resolve(renderTemplate(template, "f-string", newInput));
   }
 
-  partial(_values: PartialValues): Promise<BasePromptTemplate> {
+  partial<P2 extends string>(
+    _values: Record<P2, any>
+  ): Promise<BasePromptTemplate<Exclude<string, P2>, string>> {
     throw new Error("Not implemented");
   }
 

@@ -12,16 +12,21 @@ import {
 } from "../schema/index.js";
 import { SerializedLLMChain } from "./serde.js";
 
-export interface LLMChainInput extends ChainInputs {
+export interface LLMChainInput<
+  K extends string,
+  P extends string,
+  O extends string,
+  MI extends string
+> extends ChainInputs<K, P, O, MI> {
   /** Prompt object to use */
-  prompt: BasePromptTemplate;
+  prompt: BasePromptTemplate<K | MI, P>;
   /** LLM Wrapper to use */
   llm: BaseLanguageModel;
   /** OutputParser to use */
   outputParser?: BaseOutputParser;
 
   /** @ignore */
-  outputKey?: string;
+  outputKey?: O;
 }
 
 /**
@@ -38,12 +43,20 @@ export interface LLMChainInput extends ChainInputs {
  * const llm = new LLMChain({ llm: new OpenAI(), prompt });
  * ```
  */
-export class LLMChain extends BaseChain implements LLMChainInput {
-  prompt: BasePromptTemplate;
+export class LLMChain<
+    K extends string,
+    P extends string,
+    O extends string,
+    MI extends string
+  >
+  extends BaseChain<K, P, O, MI>
+  implements LLMChainInput<K, P, O, MI>
+{
+  prompt: BasePromptTemplate<K | MI, P>;
 
   llm: BaseLanguageModel;
 
-  outputKey = "text";
+  outputKey = "text" as O;
 
   outputParser?: BaseOutputParser;
 
@@ -51,7 +64,7 @@ export class LLMChain extends BaseChain implements LLMChainInput {
     return this.prompt.inputVariables;
   }
 
-  constructor(fields: LLMChainInput) {
+  constructor(fields: LLMChainInput<K, P, O, MI>) {
     super(fields.memory, fields.verbose, fields.callbackManager);
     this.prompt = fields.prompt;
     this.llm = fields.llm;
@@ -82,16 +95,21 @@ export class LLMChain extends BaseChain implements LLMChainInput {
     return finalCompletion;
   }
 
-  async _call(values: ChainValues): Promise<ChainValues> {
+  async _call(values: ChainValues<K, P>): Promise<ChainValues<O, never>> {
     let stop;
     if ("stop" in values && Array.isArray(values.stop)) {
       stop = values.stop;
     }
-    const promptValue = await this.prompt.formatPromptValue(values);
+    const promptValue = await this.prompt.formatPromptValue(
+      values as ChainValues<K | MI, P>
+    );
     const { generations } = await this.llm.generatePrompt([promptValue], stop);
     return {
-      [this.outputKey]: await this._getFinalOutput(generations[0], promptValue),
-    };
+      [this.outputKey as O]: await this._getFinalOutput(
+        generations[0],
+        promptValue
+      ),
+    } as ChainValues<O, never>;
   }
 
   /**
@@ -105,16 +123,18 @@ export class LLMChain extends BaseChain implements LLMChainInput {
    * llm.predict({ adjective: "funny" })
    * ```
    */
-  async predict(values: ChainValues): Promise<string> {
+  async predict(values: ChainValues<K, P>): Promise<string> {
     const output = await this.call(values);
-    return output[this.outputKey];
+    return output[this.outputKey as O];
   }
 
   _chainType() {
     return "llm_chain" as const;
   }
 
-  static async deserialize(data: SerializedLLMChain) {
+  static async deserialize(
+    data: SerializedLLMChain
+  ): Promise<LLMChain<any, any, any, any>> {
     const { llm, prompt } = data;
     if (!llm) {
       throw new Error("LLMChain must have llm");
@@ -146,23 +166,37 @@ Current conversation:
 Human: {input}
 AI:`;
 
-export class ConversationChain extends LLMChain {
+// FIXME: Hard-coding these variable names for now, but I think they can
+// technically be configured via the provided `memory`, `prompt`, and
+// `outputKey` fields.
+//
+// It turns out this is pretty hard to generalize unfortunately while
+// maintaining type-safety, due to the need to union various parametric types
+// which can be non-narrow `string`.
+export class ConversationChain extends LLMChain<
+  "input", // Required
+  never, // Provided
+  "response", // Output
+  "history" // Memory-provided
+> {
   constructor(fields: {
     llm: BaseLanguageModel;
-    prompt?: BasePromptTemplate;
-    outputKey?: string;
-    memory?: BaseMemory;
+    prompt?: BasePromptTemplate<"input" | "history", never>;
+    outputKey?: "response";
+    memory?: BaseMemory<"input", never, "response", "history">;
   }) {
     super({
       prompt:
         fields.prompt ??
-        new PromptTemplate({
+        new PromptTemplate<"input" | "history">({
           template: defaultTemplate,
-          inputVariables: ["history", "input"],
+          inputVariables: ["input"],
         }),
       llm: fields.llm,
       outputKey: fields.outputKey ?? "response",
     });
-    this.memory = fields.memory ?? new BufferMemory();
+    this.memory =
+      fields.memory ??
+      new BufferMemory<"input", never, "response", "history">();
   }
 }

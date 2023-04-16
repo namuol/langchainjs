@@ -6,14 +6,14 @@ export class ChainTool extends Tool {
 
   description: string;
 
-  chain: BaseChain;
+  chain: BaseChain<any, any, any, any>;
 
   returnDirect: boolean;
 
   constructor(fields: {
     name: string;
     description: string;
-    chain: BaseChain;
+    chain: BaseChain<any, any, any, any>;
     returnDirect?: boolean;
   }) {
     super();

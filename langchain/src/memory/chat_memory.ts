@@ -3,13 +3,9 @@ import {
   AIChatMessage,
   BaseChatMessage,
   BaseChatMessageHistory,
-} from "../schema/index.js";
-import {
-  BaseMemory,
   InputValues,
-  OutputValues,
-  getInputValue,
-} from "./base.js";
+} from "../schema/index.js";
+import { BaseMemory, OutputValues, getInputValue } from "./base.js";
 
 export class ChatMessageHistory extends BaseChatMessageHistory {
   messages: BaseChatMessage[] = [];
@@ -32,23 +28,28 @@ export class ChatMessageHistory extends BaseChatMessageHistory {
   }
 }
 
-export interface BaseMemoryInput {
+export interface BaseMemoryInput<K extends string, O extends string> {
   chatHistory?: ChatMessageHistory;
   returnMessages?: boolean;
-  inputKey?: string;
-  outputKey?: string;
+  inputKey?: K;
+  outputKey?: O;
 }
 
-export abstract class BaseChatMemory extends BaseMemory {
+export abstract class BaseChatMemory<
+  K extends string,
+  P extends string,
+  O extends string,
+  MI extends string
+> extends BaseMemory<K, P, O, MI> {
   chatHistory: ChatMessageHistory;
 
   returnMessages = false;
 
-  inputKey?: string;
+  inputKey?: K;
 
-  outputKey?: string;
+  outputKey?: O;
 
-  constructor(fields?: BaseMemoryInput) {
+  constructor(fields?: BaseMemoryInput<K, O>) {
     super();
     this.chatHistory = fields?.chatHistory ?? new ChatMessageHistory();
     this.returnMessages = fields?.returnMessages ?? this.returnMessages;
@@ -57,8 +58,8 @@ export abstract class BaseChatMemory extends BaseMemory {
   }
 
   async saveContext(
-    inputValues: InputValues,
-    outputValues: OutputValues
+    inputValues: InputValues<K, P>,
+    outputValues: OutputValues<O>
   ): Promise<void> {
     this.chatHistory.addUserMessage(getInputValue(inputValues, this.inputKey));
     this.chatHistory.addAIChatMessage(
